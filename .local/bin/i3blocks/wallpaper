@@ -1,0 +1,15 @@
+#!/bin/sh
+
+case $BLOCK_BUTTON in
+	1)
+		dir=~/.config/wallpapers
+		choice=$(ls "$dir" | rofi -dmenu -p "Wallpaper" -i)
+		[ -n "$choice" ] && feh --bg-fill --no-fehbg "$dir/$choice"
+		;;
+esac
+
+icon="&#xf03e;"
+
+printf " %s \n" "$icon"
+printf " %s \n" "$icon"
+echo "#689d6a"

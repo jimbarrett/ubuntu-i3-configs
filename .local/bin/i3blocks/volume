@@ -1,0 +1,24 @@
+#!/bin/sh
+
+case $BLOCK_BUTTON in
+	1) alacritty -e pavucontrol & ;;
+	2) pamixer --toggle-mute && pkill -RTMIN+10 i3blocks ;;
+	4) pamixer --increase 5 && pkill -RTMIN+10 i3blocks ;;
+	5) pamixer --decrease 5 && pkill -RTMIN+10 i3blocks ;;
+	3) notify-send "Volume" "Left-click: pavucontrol\nMiddle-click: mute\nScroll: adjust" ;;
+esac
+
+if [ "$(pamixer --get-mute)" = "true" ]; then
+	printf "<span color='#cc241d'>&#xf026;  muted</span>\n"
+	exit
+fi
+
+vol=$(pamixer --get-volume)
+
+if [ "$vol" -gt 50 ]; then
+	icon="&#xf028;"
+else
+	icon="&#xf027;"
+fi
+
+printf "%s  %s\n" "$icon" "$vol"

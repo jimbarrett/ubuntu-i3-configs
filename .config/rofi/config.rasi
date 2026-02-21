@@ -1,0 +1,64 @@
+configuration {
+    show-icons: false;
+    font: "Hack Nerd Font Mono 10";
+    display-drun: "run:";
+    display-window: "win:";
+    drun-display-format: "{name}";
+}
+
+* {
+    bg:     #282828;
+    bg-alt: #3c3836;
+    fg:     #ebdbb2;
+    fg-alt: #a89984;
+    accent: #d79921;
+
+    background-color: @bg;
+    text-color: @fg;
+}
+
+window {
+    width: 400px;
+    border: 2px;
+    border-color: @accent;
+    location: center;
+}
+
+mainbox {
+    children: [ inputbar, listview ];
+    spacing: 0;
+}
+
+inputbar {
+    children: [ prompt, entry ];
+    padding: 6px 8px;
+    background-color: @bg-alt;
+}
+
+prompt {
+    padding: 0 4px 0 0;
+    text-color: @accent;
+}
+
+entry {
+    placeholder: "";
+}
+
+listview {
+    lines: 10;
+    padding: 4px 0;
+    scrollbar: false;
+}
+
+element {
+    padding: 4px 8px;
+}
+
+element selected {
+    background-color: @accent;
+    text-color: @bg;
+}
+
+element-text {
+    text-color: inherit;
+}

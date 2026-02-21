@@ -1,0 +1,45 @@
+#!/bin/sh
+
+acpi_out=$(acpi -b 2>/dev/null | grep "Battery ${BLOCK_INSTANCE:-0}")
+
+# no battery? exit silently
+[ -z "$acpi_out" ] && exit 0
+
+percent=$(echo "$acpi_out" | grep -oP '\d+(?=%)')
+status=$(echo "$acpi_out" | grep -oP '(?:Charging|Discharging|Full|Not charging)')
+time_left=$(echo "$acpi_out" | grep -oP '\d{2}:\d{2}(?=:\d{2})')
+
+# icon based on level
+if [ "$percent" -lt 20 ]; then
+	icon="&#xf243;"
+	color="#cc241d"
+elif [ "$percent" -lt 40 ]; then
+	icon="&#xf242;"
+	color="#d79921"
+elif [ "$percent" -lt 60 ]; then
+	icon="&#xf241;"
+	color="#fabd2f"
+elif [ "$percent" -lt 85 ]; then
+	icon="&#xf241;"
+	color="#98971a"
+else
+	icon="&#xf240;"
+	color="#b8bb26"
+fi
+
+# charging indicator
+[ "$status" = "Charging" ] && icon="&#xf1e6; $icon"
+
+full_text="$percent%"
+[ -n "$time_left" ] && full_text="$percent% ($time_left)"
+
+if [ "$status" = "Discharging" ] && [ "$percent" -lt 40 ]; then
+	printf "<span color='%s'>%s %s</span>\n" "$color" "$icon" "$full_text"
+else
+	printf "%s %s\n" "$icon" "$full_text"
+fi
+
+# urgent if below 5%
+[ "$status" = "Discharging" ] && [ "$percent" -lt 5 ] && exit 33
+
+exit 0

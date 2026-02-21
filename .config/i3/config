@@ -1,0 +1,197 @@
+# i3 config - Ubuntu/gruvbox
+# vim: ft=i3config
+
+# gaps
+for_window [class="^.*"] border pixel 2
+gaps inner 5
+gaps outer 5
+
+set $term alacritty
+set $mod Mod1
+
+# fullscreen windows
+for_window [class="fullscreen"] fullscreen enable
+
+# floating rules
+for_window [class="Arandr"] floating enable
+for_window [class="Pavucontrol"] floating enable
+
+# autostart
+exec --no-startup-id xrdb -merge ~/.Xresources
+exec --no-startup-id xsetroot -cursor_name left_ptr -cursor_size 24
+exec --no-startup-id autorandr --change
+exec --no-startup-id feh --bg-fill --no-fehbg ~/.config/wallpapers/village.jpg
+exec --no-startup-id dunst
+exec --no-startup-id picom
+exec --no-startup-id nm-applet
+
+# font
+font pango:Hack Nerd Font 9
+
+floating_minimum_size 75 x 50
+floating_maximum_size -1 x -1
+
+# gruvbox colors
+set $bg       #282828
+set $bg1      #3c3836
+set $bg2      #504945
+set $fg       #ebdbb2
+set $fg4      #a89984
+set $red      #cc241d
+set $green    #98971a
+set $yellow   #d79921
+set $blue     #458588
+set $purple   #b16286
+set $aqua     #689d6a
+set $orange   #d65d0e
+set $bred     #fb4934
+set $bgreen   #b8bb26
+set $byellow  #fabd2f
+set $bblue    #83a598
+set $bpurple  #d3869b
+set $baqua    #8ec07c
+set $borange  #fe8019
+
+#                       BORDER   BACKGROUND  TEXT  INDICATOR  CHILD_BORDER
+client.focused          $bblue   $bg         $fg   $green     $yellow
+client.unfocused        $bg2     $bg         $fg4  $bg2       $bg1
+client.focused_inactive $bg2     $bg         $fg4  $bg2       $bg1
+client.urgent           $red     $bg         $fg   $red       $red
+client.background       $bg
+
+# mouse+mod to drag floating windows
+floating_modifier $mod
+
+# terminal
+bindsym $mod+Return exec $term
+
+# kill focused window
+bindsym $mod+Shift+q kill
+
+# rofi launcher
+bindsym $mod+d exec rofi -show drun -show-icons
+bindsym $mod+Tab exec rofi -show window -show-icons
+
+# volume controls (pamixer for pipewire)
+bindsym $mod+Shift+m exec pamixer --toggle-mute && pkill -RTMIN+10 i3blocks
+bindsym $mod+Shift+u exec pamixer --increase 5 && pkill -RTMIN+10 i3blocks
+bindsym $mod+Shift+d exec pamixer --decrease 5 && pkill -RTMIN+10 i3blocks
+
+# change focus
+bindsym $mod+j focus left
+bindsym $mod+k focus down
+bindsym $mod+l focus up
+bindsym $mod+semicolon focus right
+
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+# move focused window
+bindsym $mod+Shift+j move left
+bindsym $mod+Shift+k move down
+bindsym $mod+Shift+l move up
+bindsym $mod+Shift+semicolon move right
+
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# split orientation
+bindsym $mod+h split h
+bindsym $mod+v split v
+
+# fullscreen
+bindsym $mod+f fullscreen toggle
+
+# layout
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+
+# floating
+bindsym $mod+Shift+space floating toggle
+bindsym $mod+space focus mode_toggle
+
+# workspaces
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+bindsym $mod+8 workspace $ws8
+bindsym $mod+9 workspace $ws9
+bindsym $mod+0 workspace $ws10
+
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7
+bindsym $mod+Shift+8 move container to workspace $ws8
+bindsym $mod+Shift+9 move container to workspace $ws9
+bindsym $mod+Shift+0 move container to workspace $ws10
+
+# reload / restart / exit
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+r restart
+bindsym $mod+Shift+e exec i3-msg exit
+
+# lock screen
+bindsym $mod+x exec i3lock -c 282828
+
+# screenshot
+bindsym Print exec --no-startup-id import -window root ~/Pictures/screenshot_$(date +%Y%m%d_%H%M%S).png && notify-send "Screenshot saved"
+
+# resize mode
+mode "resize" {
+    bindsym j resize shrink width 10 px or 10 ppt
+    bindsym k resize grow height 10 px or 10 ppt
+    bindsym l resize shrink height 10 px or 10 ppt
+    bindsym semicolon resize grow width 10 px or 10 ppt
+
+    bindsym Left resize shrink width 10 px or 10 ppt
+    bindsym Down resize grow height 10 px or 10 ppt
+    bindsym Up resize shrink height 10 px or 10 ppt
+    bindsym Right resize grow width 10 px or 10 ppt
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+    bindsym $mod+r mode "default"
+}
+
+bindsym $mod+r mode "resize"
+
+# bar
+bar {
+    colors {
+        background $bg
+        statusline $yellow
+        separator  $yellow
+        focused_workspace  $yellow $bg $yellow
+        active_workspace   $bg     $bg $yellow
+        inactive_workspace $bg     $bg $fg4
+        urgent_workspace   $bg     $bg $red
+    }
+    status_command i3blocks -c ~/.config/i3blocks/config
+    position top
+    mode dock
+    modifier None
+}

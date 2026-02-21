@@ -1,0 +1,25 @@
+#!/bin/sh
+
+case $BLOCK_BUTTON in
+	1) alacritty -e nmtui ;;
+esac
+
+INTERFACE="$(iwgetid | awk '{print $1}')"
+icon="&#xf1eb;"
+
+NETWORK=$(iwgetid -r)
+QUALITY=$(grep "$INTERFACE" /proc/net/wireless 2>/dev/null | awk '{ print int($3 * 100 / 70) }')
+
+if [ -z "$QUALITY" ]; then
+	echo "$icon  Not Connected"
+	echo "$icon"
+	echo "#cc241d"
+else
+	echo "$icon  ($NETWORK) $QUALITY%"
+	echo "$icon  $QUALITY%"
+	if [ "$QUALITY" -lt 50 ]; then
+		echo "#cc241d"
+	else
+		echo "#98971a"
+	fi
+fi

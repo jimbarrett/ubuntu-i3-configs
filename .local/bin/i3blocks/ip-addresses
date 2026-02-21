@@ -1,0 +1,14 @@
+#!/bin/sh
+
+local=$(ip route get 1 2>/dev/null | awk '{print $7; exit}')
+public=$(curl -s --max-time 3 ifconfig.me)
+
+icon="&#xf012;"
+
+[ -z "$local" ] && exit
+
+full_text="$local"
+[ -n "$public" ] && full_text="$local / $public"
+
+echo "$icon $full_text"
+echo "$icon $local"
