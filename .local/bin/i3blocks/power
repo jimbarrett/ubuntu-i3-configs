@@ -1,0 +1,19 @@
+#!/bin/sh
+
+case $BLOCK_BUTTON in
+	1)
+		choice=$(printf "Lock\nStandby\nSuspend\nReboot\nShutdown" | rofi -dmenu -p "Power" -i)
+		case "$choice" in
+			Lock) i3lock -c 282828 ;;
+			Standby) xset dpms force standby ;;
+			Suspend) systemctl suspend ;;
+			Reboot) systemctl reboot ;;
+			Shutdown) systemctl poweroff ;;
+		esac
+		;;
+	3) notify-send "Power" "Left-click: power menu" ;;
+esac
+
+printf " &#xf011;  \n"
+printf " &#xf011;  \n"
+echo "#cc241d"

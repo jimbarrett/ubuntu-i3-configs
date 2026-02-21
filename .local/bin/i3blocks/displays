@@ -1,19 +1,17 @@
 #!/bin/sh
 
-# left-click: cycle through saved autorandr profiles
-# right-click: open arandr for manual setup / saving new profiles
-
 case $BLOCK_BUTTON in
 	1)
-		profiles=$(autorandr --list 2>/dev/null)
-		if [ -z "$profiles" ]; then
-			notify-send "Displays" "No autorandr profiles saved.\nRight-click to open arandr and set up a layout,\nthen run: autorandr --save <name>"
+		layouts=$(ls "$HOME/.screenlayout" 2>/dev/null)
+		if [ -z "$layouts" ]; then
+			notify-send "Displays" "No saved layouts.\nRight-click to open arandr and save a layout."
 		else
-			current=$(autorandr --current 2>/dev/null)
-			next=$(echo "$profiles" | grep -A1 "^${current}$" | tail -1)
-			# wrap around if at end of list
-			[ "$next" = "$current" ] || [ -z "$next" ] && next=$(echo "$profiles" | head -1)
-			autorandr --load "$next" 2>/dev/null && notify-send "Displays" "Switched to: $next"
+			choice=$(echo "$layouts" | sed 's/\.sh$//' | rofi -dmenu -p "Layout" -i)
+			if [ -n "$choice" ]; then
+				sh "$HOME/.screenlayout/${choice}.sh" \
+					&& feh --bg-fill --no-fehbg ~/.config/wallpapers/village.jpg \
+					&& notify-send "Displays" "Switched to: $choice"
+			fi
 		fi
 		;;
 	3) arandr & ;;
@@ -21,9 +19,6 @@ esac
 
 icon="&#xf26c;"
 
-current=$(autorandr --current 2>/dev/null)
-label="${current:-Displays}"
-
-printf " %s  %s \n" "$icon" "$label"
+printf " %s  Displays \n" "$icon"
 printf " %s  \n" "$icon"
 echo "#d65d0e"

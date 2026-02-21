@@ -18,9 +18,22 @@ interval=60
 [wifi]
 interval=10
 
+[bluetooth]
+interval=30
+signal=11
+
 [battery]
-instance=1
+instance=0
 interval=30
 
 [clock]
 interval=1
+
+[power]
+interval=once
+
+[padding]
+full_text=
+interval=once
+separator=false
+separator_block_width=30

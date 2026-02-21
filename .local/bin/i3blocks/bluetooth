@@ -1,0 +1,119 @@
+#!/bin/sh
+
+bt_power() {
+	powered=$(bluetoothctl show 2>/dev/null | grep "Powered:" | awk '{print $2}')
+	echo "$powered"
+}
+
+bt_connected() {
+	bluetoothctl devices Connected 2>/dev/null | cut -d' ' -f3-
+}
+
+case $BLOCK_BUTTON in
+	1)
+		powered=$(bt_power)
+		if [ "$powered" = "yes" ]; then
+			# build menu: toggle off + paired devices
+			paired=$(bluetoothctl devices Paired 2>/dev/null)
+			connected=$(bluetoothctl devices Connected 2>/dev/null)
+			menu="Turn Off"
+			echo "$paired" | while IFS= read -r line; do
+				[ -z "$line" ] && continue
+				mac=$(echo "$line" | awk '{print $2}')
+				name=$(echo "$line" | cut -d' ' -f3-)
+				if echo "$connected" | grep -q "$mac"; then
+					menu="$menu\nDisconnect $name\nRemove $name"
+				else
+					menu="$menu\nConnect $name\nRemove $name"
+				fi
+				# write to temp so we can read outside the loop
+				echo "$menu" > /tmp/.bt_menu
+				echo "$mac $name" >> /tmp/.bt_devices
+			done
+			# read back
+			[ -f /tmp/.bt_menu ] && menu=$(cat /tmp/.bt_menu) || menu="Turn Off"
+			choice=$(printf "%b" "$menu" | rofi -dmenu -p "Bluetooth" -i)
+			case "$choice" in
+				"Turn Off")
+					bluetoothctl power off > /dev/null 2>&1
+					notify-send "Bluetooth" "Powered off"
+					;;
+				Connect*)
+					name=$(echo "$choice" | sed 's/^Connect //')
+					mac=$(grep "$name" /tmp/.bt_devices 2>/dev/null | awk '{print $1}')
+					if [ -n "$mac" ]; then
+						bluetoothctl connect "$mac" > /dev/null 2>&1 \
+							&& notify-send "Bluetooth" "Connected: $name" \
+							|| notify-send "Bluetooth" "Failed to connect: $name"
+					fi
+					;;
+				Disconnect*)
+					name=$(echo "$choice" | sed 's/^Disconnect //')
+					mac=$(grep "$name" /tmp/.bt_devices 2>/dev/null | awk '{print $1}')
+					if [ -n "$mac" ]; then
+						bluetoothctl disconnect "$mac" > /dev/null 2>&1 \
+							&& notify-send "Bluetooth" "Disconnected: $name" \
+							|| notify-send "Bluetooth" "Failed to disconnect: $name"
+					fi
+					;;
+				Remove*)
+					name=$(echo "$choice" | sed 's/^Remove //')
+					mac=$(grep "$name" /tmp/.bt_devices 2>/dev/null | awk '{print $1}')
+					if [ -n "$mac" ]; then
+						bluetoothctl remove "$mac" > /dev/null 2>&1 \
+							&& notify-send "Bluetooth" "Removed: $name" \
+							|| notify-send "Bluetooth" "Failed to remove: $name"
+					fi
+					;;
+			esac
+			rm -f /tmp/.bt_menu /tmp/.bt_devices
+		else
+			bluetoothctl power on > /dev/null 2>&1
+			notify-send "Bluetooth" "Powered on"
+		fi
+		pkill -RTMIN+11 i3blocks
+		;;
+	3)
+		powered=$(bt_power)
+		if [ "$powered" != "yes" ]; then
+			notify-send "Bluetooth" "Bluetooth is off. Left-click to turn on."
+		else
+			notify-send "Bluetooth" "Scanning for devices..."
+			bluetoothctl --timeout 5 scan on > /dev/null 2>&1 &
+			sleep 6
+			devices=$(bluetoothctl devices 2>/dev/null | cut -d' ' -f3-)
+			if [ -z "$devices" ]; then
+				notify-send "Bluetooth" "No devices found"
+			else
+				choice=$(echo "$devices" | rofi -dmenu -p "Pair" -i)
+				if [ -n "$choice" ]; then
+					mac=$(bluetoothctl devices 2>/dev/null | grep "$choice" | awk '{print $2}')
+					if [ -n "$mac" ]; then
+						bluetoothctl pair "$mac" > /dev/null 2>&1 \
+							&& bluetoothctl trust "$mac" > /dev/null 2>&1 \
+							&& bluetoothctl connect "$mac" > /dev/null 2>&1 \
+							&& notify-send "Bluetooth" "Paired and connected: $choice" \
+							|| notify-send "Bluetooth" "Failed to pair: $choice"
+					fi
+				fi
+			fi
+		fi
+		pkill -RTMIN+11 i3blocks
+		;;
+esac
+
+powered=$(bt_power)
+connected=$(bt_connected)
+
+if [ "$powered" != "yes" ]; then
+	printf "<span color='#a89984'>&#xf294;  Off</span>\n"
+	printf "<span color='#a89984'>&#xf294;</span>\n"
+elif [ -n "$connected" ]; then
+	label=$(echo "$connected" | head -1)
+	printf "&#xf294;  %s\n" "$label"
+	printf "&#xf294;\n"
+	echo "#83a598"
+else
+	printf "&#xf294;  On\n"
+	printf "&#xf294;\n"
+fi
