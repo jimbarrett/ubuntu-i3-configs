@@ -1,13 +1,25 @@
 #!/bin/sh
 
-acpi_out=$(acpi -b 2>/dev/null | grep "Battery ${BLOCK_INSTANCE:-0}")
+acpi_out=$(acpi -b 2>/dev/null)
 
 # no battery? exit silently
 [ -z "$acpi_out" ] && exit 0
 
-percent=$(echo "$acpi_out" | grep -oP '\d+(?=%)')
-status=$(echo "$acpi_out" | grep -oP '(?:Charging|Discharging|Full|Not charging)')
-time_left=$(echo "$acpi_out" | grep -oP '\d{2}:\d{2}(?=:\d{2})')
+# find the active battery: prioritize Discharging > Charging > Full/Not charging
+# skip phantom entries (Unknown, 0%)
+active_line=""
+for state in Discharging Charging "Not charging" Full; do
+	line=$(echo "$acpi_out" | grep "$state" | head -1)
+	if [ -n "$line" ]; then
+		active_line="$line"
+		break
+	fi
+done
+[ -z "$active_line" ] && exit 0
+
+percent=$(echo "$active_line" | grep -oP '\d+(?=%)')
+status=$(echo "$active_line" | grep -oP '(?:Charging|Discharging|Full|Not charging)')
+time_left=$(echo "$active_line" | grep -oP '\d{2}:\d{2}(?=:\d{2})')
 
 # icon based on level
 if [ "$percent" -lt 20 ]; then
