@@ -2,6 +2,9 @@ command=~/.local/bin/i3blocks/$BLOCK_NAME
 separator_block_width=15
 markup=pango
 
+[launcher]
+interval=once
+
 [volume]
 interval=once
 signal=10

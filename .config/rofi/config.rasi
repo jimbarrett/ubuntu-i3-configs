@@ -4,6 +4,8 @@ configuration {
     display-drun: "run:";
     display-window: "win:";
     drun-display-format: "{name}";
+    me-select-entry: "";
+    me-accept-entry: "MousePrimary";
 }
 
 * {
